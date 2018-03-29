@@ -11,7 +11,7 @@ A simple implementation of a model-agnostic montecarlo tree search. Just pass a 
 ## Usage
 
 ```python
-from montecarlo import MCTS
+from MonteCarloTreeSearch import MCTS
 
 tree = MCTS(my_handler, max_steps = 10, num_simlulations = 100)
 
