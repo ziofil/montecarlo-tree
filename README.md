@@ -1,6 +1,6 @@
 # montecarlo-tree
 
-A simple implementation of a model-agnostic montecarlo tree search to use with an actor-critic RL agent. Just pass a handler that interfaces with a specific model. The handler must implement the following functions:
+A simple implementation of a model-agnostic montecarlo tree search to use with an actor-critic RL agent. Just pass a handler that interfaces with your model. The handler must implement the following functions:
 - `num_actions(state)`
 - `new_state(action, state)`
 - `value(state)` <--- must also be able to work on lists/arrays of states
