@@ -70,9 +70,9 @@ class MCTS():
                 # if the new node already exists, we're done.
                 node = self.tree[key]
                 return key, node['stop']
-            except:
+            except KeyError:
                 state = self.handler.new_state(action, node['state']) # TODO: don't recompute this state?
-        except:
+        except KeyError:
             # we are at the root of the tree
             key = ()
             state = self.handler.root
@@ -106,14 +106,14 @@ class MCTS():
             # --- update visits ---
             try: # fails at the bottom node (where we start our ascent), because we haven't specified an action
                 node['visits'][action] += visits_buffer
-            except:
+            except NameError:
                 pass
             visits_buffer = sum(node['visits']) # total visits of the node
 
             # --- update values ---
             try: # fails at the botton node
                 node['values'][action] += values_buffer/node['visits'][action] # update value with average value of all lower nodes
-            except:
+            except NameError:
                 pass
             values_buffer = node['values']@node['visits'] # this is an inner product (new total value of all nodes below the current one)
 
@@ -123,7 +123,7 @@ class MCTS():
                 key = list(key)
                 action = key.pop() # go up the tree one step
                 key = tuple(key)
-            except:
+            except IndexError:
                 # when we hit the root, which has key = ()
                 break
 
