@@ -62,19 +62,19 @@ class MCTS():
         node = {}
         try:
             node = self.tree[key]
-            choice = node['values'] + 10*node['policy']/node['visits'] # factor of 10 is to make the policy have the same weight as the value.
+            choice = node['values'] + 10*node['policy']/node['visits'] # factor of 10 (arbitrary) is to make the policy have more weight.
             action = np.random.choice(self.handler.num_actions(node['state']), p=choice/sum(choice))
             #action = np.argmax(choice) # greedy (use after training is over)
-            key = tuple([*key, action])
+            new_key = tuple([*key, action])
             try:
                 # if the new node already exists, we're done.
-                node = self.tree[key]
-                return key, node['stop']
+                node = self.tree[new_key]
+                return new_key, node['stop']
             except KeyError:
                 state = self.handler.new_state(action, node['state']) # TODO: don't recompute this state?
         except KeyError:
             # we are at the root of the tree
-            key = ()
+            new_key = ()
             state = self.handler.root
 
         # if the new node doesn't exist we need to create it
@@ -82,15 +82,15 @@ class MCTS():
         values = self.handler.value(self.handler.next_possible_states(state)) # here handler.value needs to operate on a list/array of states
         policy = self.handler.policy(state)
         stop = self.handler.is_solution(state)
-        self.tree.update({key:{'state':state, 'visits':visits, 'values':values, 'policy':policy, 'stop':stop}})
+        self.tree.update({new_key:{'state':state, 'visits':visits, 'values':values, 'policy':policy, 'stop':stop}})
 
-        return key, stop
+        return new_key, stop
 
 
 
     def _all_the_way_up(self, bottom_key):
         """
-        This is the "learning' part. When going down the tree we just explored and stored information, now we use it.
+        This is the "learning' part. When going down the tree we just explored and stored information, now we back it up the tree.
         We start from the bottom and we go back up to the root.
         At each step we update the 'visits' and 'values' entries of the current node's dictionary to be (respectively) the total number of
         nodes that were explored below, and their average value.
@@ -144,16 +144,11 @@ class MCTS():
         for _ in range(_num_simulations):
             key = ()
             step = 0
-            while True:
+            for step in range(_max_steps):
                 key, stop = self._down_one_step(key)
                 if stop:
-                    # update visits with the number of possible nodes below (maybe it's too much? not sure)
-                    self.tree[key]['visits'] += self.handler.num_actions(self.tree[key]['state'])**(_max_steps - step)
+                    # set value to highest possible value
                     break
-                if step == _max_steps:
-                    break
-                step += 1
-
             self._all_the_way_up(key)
 
         first_visits = self.tree[()]['visits']
